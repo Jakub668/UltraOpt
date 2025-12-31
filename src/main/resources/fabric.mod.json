@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "ultraopt",
+  "version": "${version}",
+  "name": "UltraOpt",
+  "description": "Ultra lightweight performance & utility mod (mobile friendly)",
+  "authors": ["Jakub"],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "pl.jakub.ultraopt.UltraOpt"
+    ]
+  },
+  "mixins": [
+    "ultraopt.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "1.21.4",
+    "fabric-api": "*"
+  }
+}
