@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "pl.jakub.ultraopt.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "entity.ItemEntityCullingMixin",
+    "entity.ItemEntityRenderMixin",
+    "entity.ItemEntityCountRenderMixin",
+    "entity.EntityRenderLimiterMixin",
+    "particle.ParticleManagerMixin",
+    "chunk.ChunkRebuildMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
