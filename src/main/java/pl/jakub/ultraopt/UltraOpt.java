@@ -1,15 +1,16 @@
 package pl.jakub.ultraopt;
 
-import net.fabricmc.api.ClientModInitializer;
-import pl.jakub.ultraopt.config.UltraOptConfig;
-import pl.jakub.ultraopt.config.ConfigLoader;
+import net.fabricmc.api.ModInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class UltraOpt implements ClientModInitializer {
+public class UltraOpt implements ModInitializer {
 
-    public static UltraOptConfig CONFIG;
+    public static final String MOD_ID = "ultraopt";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
-    public void onInitializeClient() {
-        CONFIG = ConfigLoader.load();
+    public void onInitialize() {
+        LOGGER.info("UltraOpt initialized!");
     }
 }
