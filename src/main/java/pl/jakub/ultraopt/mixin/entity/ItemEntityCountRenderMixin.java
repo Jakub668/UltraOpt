@@ -1,12 +1,14 @@
 package pl.jakub.ultraopt.mixin.entity;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.ItemEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ItemEntityCountRenderMixin {
 
     @Inject(
-        method = "render",
+        method = "render(Lnet/minecraft/entity/ItemEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
         at = @At("TAIL")
     )
     private void ultraopt$renderItemCount(
@@ -31,32 +33,25 @@ public class ItemEntityCountRenderMixin {
         int count = entity.getStack().getCount();
         if (count <= 1) return;
 
+        MinecraftClient mc = MinecraftClient.getInstance();
+        TextRenderer renderer = mc.textRenderer;
+
         matrices.push();
 
-        // pozycja NAD itemem
-        matrices.translate(0.0, 0.6, 0.0);
+        // lekko nad itemem
+        Vec3d pos = entity.getPos();
+        matrices.translate(0.0D, 0.25D, 0.0D);
+        matrices.scale(0.02F, -0.02F, 0.02F);
 
-        // zawsze przodem do kamery
-        matrices.multiply(
-                RotationAxis.POSITIVE_Y.rotationDegrees(
-                        -entity.getYaw()
-                )
-        );
-
-        matrices.scale(-0.025f, -0.025f, 0.025f);
-
-        TextRenderer renderer =
-                net.minecraft.client.MinecraftClient.getInstance().textRenderer;
-
-        Text text = Text.literal(String.valueOf(count));
+        Matrix4f matrix4f = matrices.peek().getPositionMatrix();
 
         renderer.draw(
-                text,
-                -renderer.getWidth(text) / 2f,
+                Text.literal("x" + count),
+                -renderer.getWidth("x" + count) / 2.0F,
                 0,
                 0xFFFFFF,
                 false,
-                matrices,
+                matrix4f,
                 vertexConsumers,
                 TextRenderer.TextLayerType.NORMAL,
                 0,
