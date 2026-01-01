@@ -1,28 +1,16 @@
 package pl.jakub.ultraopt;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import pl.jakub.ultraopt.mods.ModListCommand;
-import pl.jakub.ultraopt.settings.UltraOptSettingsCommand;
-import pl.jakub.ultraopt.edit.commands.Pos1Command;
-import pl.jakub.ultraopt.edit.commands.Pos2Command;
+import net.fabricmc.api.ModInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class UltraOpt implements ClientModInitializer {
+public class UltraOpt implements ModInitializer {
+
+    public static final String MOD_ID = "ultraopt";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
-    public void onInitializeClient() {
-
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-
-            // /ultraopt (ON / OFF)
-            UltraOptSettingsCommand.register(dispatcher);
-
-            // /modlist
-            ModListCommand.register(dispatcher);
-
-            // UltraEdit basic
-            Pos1Command.register(dispatcher);
-            Pos2Command.register(dispatcher);
-        });
+    public void onInitialize() {
+        LOGGER.info("UltraOpt loaded successfully!");
     }
 }
