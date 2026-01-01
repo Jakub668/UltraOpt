@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ParticleManager.class)
-public class ParticleManagerMixin {
+public class EntityRenderLimiterMixin {
 
     private static int count = 0;
     private static final int MAX = 300;
@@ -19,4 +19,5 @@ public class ParticleManagerMixin {
             ci.cancel();
         }
     }
+
 }
