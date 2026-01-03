@@ -1,69 +1,53 @@
 package pl.jakub.ultraopt.client.overlay;
 
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.Camera;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.util.math.Box;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
 
-public class ItemCountOverlay {
+public class ItemCountOverlay implements HudRenderCallback {
 
-    public static void renderWorld(MatrixStack matrices, Camera camera) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.world == null || mc.player == null) return;
+    private static final MinecraftClient MC = MinecraftClient.getInstance();
 
+    @Override
+    public void onHudRender(DrawContext context, float tickDelta) {
+        if (MC.world == null || MC.player == null) return;
+
+        var textRenderer = MC.textRenderer;
+        var camera = MC.gameRenderer.getCamera();
         Vec3d camPos = camera.getPos();
-        Box box = new Box(
-                camPos.x - 16, camPos.y - 16, camPos.z - 16,
-                camPos.x + 16, camPos.y + 16, camPos.z + 16
-        );
 
-        for (ItemEntity entity : mc.world.getEntitiesByClass(
+        for (ItemEntity item : MC.world.getEntitiesByClass(
                 ItemEntity.class,
-                box,
-                e -> e.getStack().getCount() > 1
+                MC.player.getBoundingBox().expand(16),
+                e -> true
         )) {
-            renderCount(matrices, camera, entity);
+            int count = item.getStack().getCount();
+            if (count <= 1) continue;
+
+            Vec3d pos = item.getPos().subtract(camPos);
+
+            // prosta projekcja (bez bounding boxa kamery – bo go NIE MA)
+            double yOffset = item.getHeight() + 0.3;
+
+            int screenX = (int) (MC.getWindow().getScaledWidth() / 2 + pos.x * 40);
+            int screenY = (int) (MC.getWindow().getScaledHeight() / 2 - (pos.y + yOffset) * 40);
+
+            Text text = Text.literal(String.valueOf(count));
+
+            context.drawText(
+                    textRenderer,
+                    text,
+                    screenX,
+                    screenY,
+                    0xFFFFFF,
+                    true
+            );
         }
-    }
-
-    private static void renderCount(MatrixStack matrices, Camera camera, ItemEntity entity) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        TextRenderer tr = mc.textRenderer;
-
-        matrices.push();
-        matrices.translate(
-                entity.getX() - camera.getPos().x,
-                entity.getY() - camera.getPos().y + 0.4,
-                entity.getZ() - camera.getPos().z
-        );
-        matrices.scale(-0.025f, -0.025f, 0.025f);
-
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
-        VertexConsumerProvider.Immediate vcp =
-                mc.getBufferBuilders().getEntityVertexConsumers();
-
-        String text = String.valueOf(entity.getStack().getCount());
-        float x = -tr.getWidth(text) / 2f;
-
-        tr.draw(
-                text,
-                x,
-                0,
-                0xFFFFFF,
-                false,
-                matrix,
-                vcp,
-                TextRenderer.TextLayerType.NORMAL,
-                0,
-                15728880
-        );
-
-        vcp.draw();
-        matrices.pop();
     }
 }
