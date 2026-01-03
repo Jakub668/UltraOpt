@@ -12,37 +12,32 @@ public class ItemCountOverlay {
 
     private static final MinecraftClient mc = MinecraftClient.getInstance();
 
-    /**
-     * Rysuje ilość itemów jako overlay (MC 1.21.4)
-     */
     public static void render(MatrixStack matrices, int x, int y, int count) {
         if (mc.player == null || mc.textRenderer == null) return;
         if (count <= 1) return;
 
         Text text = Text.literal(String.valueOf(count));
 
-        // ❗ W 1.21.4 MUSI być Immediate
         BufferBuilderStorage buffers = mc.getBufferBuilders();
-        VertexConsumerProvider.Immediate vertexConsumers = buffers.getEntityVertexConsumers();
+        VertexConsumerProvider.Immediate vertexConsumers =
+                buffers.getEntityVertexConsumers();
 
         matrices.push();
 
         mc.textRenderer.draw(
-                text,                                   // Text
+                text,
                 x,
                 y,
-                0xFFFFFF,                               // kolor
-                true,                                   // cień
+                0xFFFFFF,
+                true,
                 matrices.peek().getPositionMatrix(),
                 vertexConsumers,
-                TextLayerType.NORMAL,                   // OBOWIĄZKOWE
+                TextLayerType.NORMAL,
                 0,
                 15728880
         );
 
-        // ❗ BEZ TEGO JEST CRASH
         vertexConsumers.draw();
-
         matrices.pop();
     }
 }
