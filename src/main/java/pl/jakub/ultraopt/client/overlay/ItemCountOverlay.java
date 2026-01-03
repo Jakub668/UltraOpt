@@ -2,42 +2,49 @@ package pl.jakub.ultraopt.client.overlay;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.font.TextRenderer.TextLayerType;
-import net.minecraft.client.render.BufferBuilderStorage;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
+import net.minecraft.entity.ItemEntity;
 
 public class ItemCountOverlay {
 
-    private static final MinecraftClient mc = MinecraftClient.getInstance();
+    public static void renderWorld(MatrixStack matrices, Camera camera) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.world == null || mc.player == null) return;
 
-    public static void render(MatrixStack matrices, int x, int y, int count) {
-        if (mc.player == null || mc.textRenderer == null) return;
-        if (count <= 1) return;
+        for (ItemEntity entity : mc.world.getEntitiesByClass(
+                ItemEntity.class,
+                camera.getBoundingBox().expand(16),
+                e -> e.getStack().getCount() > 1
+        )) {
+            renderCount(matrices, camera, entity);
+        }
+    }
 
-        Text text = Text.literal(String.valueOf(count));
-
-        BufferBuilderStorage buffers = mc.getBufferBuilders();
-        VertexConsumerProvider.Immediate vertexConsumers =
-                buffers.getEntityVertexConsumers();
+    private static void renderCount(MatrixStack matrices, Camera camera, ItemEntity entity) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        TextRenderer tr = mc.textRenderer;
 
         matrices.push();
-
-        mc.textRenderer.draw(
-                text,
-                x,
-                y,
-                0xFFFFFF,
-                true,
-                matrices.peek().getPositionMatrix(),
-                vertexConsumers,
-                TextLayerType.NORMAL,
-                0,
-                15728880
+        matrices.translate(
+                entity.getX() - camera.getPos().x,
+                entity.getY() - camera.getPos().y + 0.4,
+                entity.getZ() - camera.getPos().z
         );
 
-        vertexConsumers.draw();
+        matrices.scale(-0.025f, -0.025f, 0.025f);
+
+        String text = String.valueOf(entity.getStack().getCount());
+        float x = -tr.getWidth(text) / 2f;
+
+        tr.draw(
+                matrices,
+                text,
+                x,
+                0,
+                0xFFFFFF
+        );
+
         matrices.pop();
     }
 }
