@@ -1,27 +1,26 @@
 package pl.jakub.ultraopt.mixin.entity;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.ItemEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.text.Text;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import pl.jakub.ultraopt.UltraOpt;
 
 @Mixin(ItemEntityRenderer.class)
-public class ItemEntityCountRenderMixin {
+public abstract class ItemEntityCountRenderMixin {
 
     @Inject(
-        method = "render(Lnet/minecraft/entity/ItemEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+        method = "render",
         at = @At("TAIL")
     )
-    private void ultraopt$renderItemCount(
+    private void ultraopt$renderCount(
             ItemEntity entity,
             float yaw,
             float tickDelta,
@@ -30,28 +29,40 @@ public class ItemEntityCountRenderMixin {
             int light,
             CallbackInfo ci
     ) {
-        int count = entity.getStack().getCount();
-        if (count <= 1) return;
+        if (!UltraOpt.CONFIG.enabled) return;
+        if (!UltraOpt.CONFIG.itemCounter) return;
 
-        MinecraftClient mc = MinecraftClient.getInstance();
-        TextRenderer renderer = mc.textRenderer;
+        ItemStack stack = entity.getStack();
+        if (stack.getCount() <= 1) return;
 
         matrices.push();
 
-        // lekko nad itemem
-        Vec3d pos = entity.getPos();
-        matrices.translate(0.0D, 0.25D, 0.0D);
-        matrices.scale(0.02F, -0.02F, 0.02F);
+        Vec3d cam = net.minecraft.client.MinecraftClient.getInstance()
+                .gameRenderer
+                .getCamera()
+                .getPos();
 
-        Matrix4f matrix4f = matrices.peek().getPositionMatrix();
+        double dx = entity.getX() - cam.x;
+        double dy = entity.getY() - cam.y + 0.25;
+        double dz = entity.getZ() - cam.z;
 
-        renderer.draw(
-                Text.literal("x" + count),
-                -renderer.getWidth("x" + count) / 2.0F,
+        matrices.translate(dx, dy, dz);
+        matrices.scale(0.025f, -0.025f, 0.025f);
+
+        TextRenderer textRenderer = net.minecraft.client.MinecraftClient
+                .getInstance()
+                .textRenderer;
+
+        String text = String.valueOf(stack.getCount());
+
+        float x = -textRenderer.getWidth(text) / 2f;
+        textRenderer.draw(
+                text,
+                x,
                 0,
                 0xFFFFFF,
                 false,
-                matrix4f,
+                matrices.peek().getPositionMatrix(),
                 vertexConsumers,
                 TextRenderer.TextLayerType.NORMAL,
                 0,
