@@ -1,42 +1,42 @@
 package pl.jakub.ultraopt.client.overlay;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.util.math.Box;
-
-import java.util.List;
+import net.minecraft.client.font.TextRenderer.TextLayerType;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
 
 public class ItemCountOverlay {
 
-    public static void render(DrawContext context) {
-        MinecraftClient client = MinecraftClient.getInstance();
+    private static final MinecraftClient mc = MinecraftClient.getInstance();
 
-        if (client.player == null || client.world == null) return;
+    /**
+     * Rysuje ilość itemów jako overlay
+     */
+    public static void render(
+            MatrixStack matrices,
+            VertexConsumerProvider vertexConsumers,
+            int x,
+            int y,
+            int count
+    ) {
+        if (mc.player == null || count <= 1) {
+            return;
+        }
 
-        // Zasięg sprawdzania itemów (w blokach)
-        double range = 8.0;
+        Text text = Text.literal(String.valueOf(count));
 
-        Box box = client.player.getBoundingBox().expand(range);
-
-        List<ItemEntity> items = client.world.getEntitiesByClass(
-                ItemEntity.class,
-                box,
-                item -> true
-        );
-
-        int count = items.size();
-
-        TextRenderer textRenderer = client.textRenderer;
-
-        context.drawText(
-                textRenderer,
-                "Items nearby: " + count,
-                5,      // X
-                5,      // Y
-                0xFFFFFF,
-                true
+        mc.textRenderer.draw(
+                text,                                   // Text (NIE String)
+                x,
+                y,
+                0xFFFFFF,                               // kolor
+                true,                                   // cień
+                matrices.peek().getPositionMatrix(),   // Matrix4f
+                vertexConsumers,
+                TextLayerType.NORMAL,                   // WYMAGANE w 1.21+
+                0,
+                15728880
         );
     }
 }
