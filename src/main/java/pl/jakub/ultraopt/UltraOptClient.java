@@ -1,18 +1,13 @@
-package pl.jakub.ultraopt.client;
+package pl.jakub.ultraopt;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import pl.jakub.ultraopt.client.overlay.ItemCountOverlay;
 
 public class UltraOptClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            ItemCountOverlay.renderWorld(
-                    context.matrixStack(),
-                    context.camera()
-            );
-        });
+        HudRenderCallback.EVENT.register(new ItemCountOverlay());
     }
 }
